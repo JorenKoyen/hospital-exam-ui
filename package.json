@@ -2,7 +2,7 @@
   "name": "hospitalizr",
   "version": "0.0.1",
   "description": "A user interfaces 3 project",
-  "productName": "Quasar App",
+  "productName": "Hospitalizr",
   "cordovaId": "org.cordova.quasar.app",
   "capacitorId": "",
   "author": "Joren Koyen <koyenjoren@gmail.com>",
