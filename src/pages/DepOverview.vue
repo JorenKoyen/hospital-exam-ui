@@ -1,5 +1,28 @@
 <template>
-  <div>
+  <div class="overview-wrapper">
+    <!-- toolbar with breadcrumbs -->
+    <q-toolbar class="bg-secondary text-white">
+      <q-breadcrumbs active-color="blue-grey-5">
+        <q-breadcrumbs-el
+          label="Dashboard"
+          icon="dashboard"
+          to="/"
+        />
+        <q-breadcrumbs-el
+          label="Departments"
+          icon="business"
+          to="/departments"
+        />
+        <q-breadcrumbs-el :label="$route.params.id" />
+      </q-breadcrumbs>
+
+      <q-space />
+
+      <q-btn
+        flat
+        icon="refresh"
+      />
+    </q-toolbar>
 
     <!-- quick overview with stats about the department -->
     <section class="grid">
@@ -41,22 +64,41 @@
 
     </section>
 
-    <!-- list all rooms from this department -->
-    <room-card />
+    <!-- navigate to interesting links for the current department -->
+    <section class="navigation">
+      <big-nav-card
+        title="View Rooms"
+        subTitle="See all rooms from this department"
+        :link="`/departments/${$route.params.id}/rooms`"
+      />
+    </section>
+
   </div>
 </template>
 
 <script>
-import RoomCard from 'components/room-card.vue';
 import SimpleStatCard from 'components/simple-stat-card.vue';
+import BigNavCard from 'components/big-navigation-card.vue';
 export default {
   name: 'PageDepartmentOverview',
   components: {
-    RoomCard,
-    SimpleStatCard
+    SimpleStatCard,
+    BigNavCard
   }
 };
 </script>
 
 <style lang="scss" scoped>
+.overview-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+section.navigation {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 </style>>
