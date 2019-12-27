@@ -1,12 +1,5 @@
 
 const routes = [
-  // {
-  //   path: '/',
-  //   component: () => import('layouts/MyLayout.vue'),
-  //   children: [
-  //     { path: '', component: () => import('pages/Index.vue') }
-  //   ]
-  // }
   {
     path: '/departments',
     component: () => import('layouts/DefaultLayout.vue'),
@@ -15,7 +8,7 @@ const routes = [
     ]
   },
   {
-    path: '/dep/:id',
+    path: '/departments/:id',
     component: () => import('layouts/DefaultLayout.vue'),
     children: [
       { path: '', component: () => import('pages/DepOverview.vue') },
