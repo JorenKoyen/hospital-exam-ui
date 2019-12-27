@@ -1,10 +1,25 @@
 
 const routes = [
+  // {
+  //   path: '/',
+  //   component: () => import('layouts/MyLayout.vue'),
+  //   children: [
+  //     { path: '', component: () => import('pages/Index.vue') }
+  //   ]
+  // }
   {
-    path: '/',
-    component: () => import('layouts/MyLayout.vue'),
+    path: '/departments',
+    component: () => import('layouts/DefaultLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/Index.vue') }
+      { path: '', component: () => import('pages/Departments.vue') }
+    ]
+  },
+  {
+    path: '/dep/:id',
+    component: () => import('layouts/DefaultLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/DepOverview.vue') },
+      { path: 'rooms', component: () => import('pages/RoomsOverview.vue') }
     ]
   }
 ];
