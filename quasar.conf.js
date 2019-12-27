@@ -54,7 +54,7 @@ module.exports = function (ctx) {
     // Full list of options: https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
     build: {
       scopeHoisting: true,
-      vueRouterMode: 'hash', // available values: 'hash', 'history'
+      vueRouterMode: 'history', // available values: 'hash', 'history'
       showProgress: true,
       gzip: false,
       analyze: false,
@@ -72,7 +72,7 @@ module.exports = function (ctx) {
           options: {
             formatter: require('eslint').CLIEngine.getFormatter('stylish')
           }
-        })
+        });
       }
     },
 
@@ -140,7 +140,6 @@ module.exports = function (ctx) {
       id: 'org.cordova.quasar.app'
     },
 
-
     // Full list of options: https://quasar.dev/quasar-cli/developing-capacitor-apps/configuring-capacitor
     capacitor: {
       hideSplashscreen: true
@@ -179,5 +178,5 @@ module.exports = function (ctx) {
         // chainWebpack also available besides this extendWebpack
       }
     }
-  }
-}
+  };
+};
