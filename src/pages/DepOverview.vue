@@ -1,8 +1,8 @@
 <template>
   <div class="overview-wrapper">
     <!-- toolbar with breadcrumbs -->
-    <q-toolbar class="bg-secondary text-white">
-      <q-breadcrumbs active-color="blue-grey-5">
+    <q-toolbar class="department-toolbar shadow-1">
+      <q-breadcrumbs active-color="blue-2">
         <q-breadcrumbs-el
           label="Dashboard"
           icon="dashboard"
@@ -100,5 +100,10 @@ section.navigation {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.department-toolbar {
+  background-color: lighten($color: $primary, $amount: 5%);
+  color: white;
 }
 </style>>
