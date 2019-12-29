@@ -1,5 +1,5 @@
 <template>
-  <q-card class="room-card">
+  <q-card class="room-card alarm">
 
     <!-- patient info & basic room info -->
     <section class="patient-info">
@@ -14,10 +14,10 @@
         >
       </q-avatar>
       <div class="patient-info__data">
-        <span class="patient-info__data__name text-weight-medium">Anna Kendrick</span>
-        <span class="patient-info__data__rrnr text-grey">99071200121</span>
+        <span class="patient-info__data__name text-weight-medium">{{ patient }}</span>
+        <span class="patient-info__data__rrnr text-grey">{{ nin }}</span>
       </div>
-      <span class="patient-info__room">room 205A</span>
+      <span class="patient-info__room">room {{ room }}</span>
     </section>
 
     <!-- monitoring info -->
@@ -43,20 +43,11 @@
     <!-- facilities, show available facilities -->
     <section class="facilities">
       <q-icon
-        class="facilities__option available"
-        name="fas fa-toilet"
-      />
-      <q-icon
+        v-for="fac in facilitiesList"
+        :key="fac.name"
         class="facilities__option"
-        name="fas fa-shower"
-      />
-      <q-icon
-        class="facilities__option available"
-        name="fas fa-tv"
-      />
-      <q-icon
-        class="facilities__option"
-        name="fas fa-baby"
+        :class="{available: fac.available}"
+        :name="fac.icon"
       />
     </section>
 
@@ -76,31 +67,113 @@
 export default {
   name: 'RoomCard',
   data: () => ({
+    nin: '',
     number: 0,
-    facilities: [
-      'sanitair',
-      'salon'
-    ],
-    patient: 'Jos Jansen',
-    upperBloodPressure: 120,
-    lowerBloodPressure: 80,
-    heartbeat: 60,
-    status: 'occupied' // clear, occupied, upcoming, missed, request, alarm
-  })
+    upperBloodPressure: 0,
+    lowerBloodPressure: 0,
+    heartbeat: 0,
+    availableFacilities: [
+      { name: 'toilet', icon: 'fas fa-toilet' },
+      { name: 'shower', icon: 'fas fa-shower' },
+      { name: 'tv', icon: 'fas fa-tv' },
+      { name: 'childsupport', icon: 'fas fa-baby' }
+    ]
+  }),
+  props: {
+    room: {
+      type: String,
+      required: true
+    },
+    facilities: {
+      type: Array,
+      default: () => []
+    },
+    patient: {
+      type: String,
+      required: true
+    }
+  },
+  methods: {
+    setupPatientTimer () {
+      // TODO: fetch data from API
+      this.nin = '99071200121';
+      this.upperBloodPressure = 120;
+      this.lowerBloodPressure = 80;
+      this.heartbeat = 60;
+    }
+  },
+  mounted () {
+    this.setupPatientTimer();
+  },
+  computed: {
+    facilitiesList () {
+      return this.availableFacilities.map(f => {
+        f.available = this.facilities.includes(f.name);
+        return f;
+      });
+    }
+  },
+  watch: {
+    patient: function (val) {
+      this.setupPatientTimer();
+    }
+  }
 };
 </script>
 
 <style lang="scss" scoped>
+$room_border_size: 0.25rem;
+@keyframes pulsate {
+  0% {
+    box-shadow: 0 0 0.2rem 1px $negative;
+  }
+  50% {
+    box-shadow: 0 0 0.2rem 3px $negative;
+  }
+  100% {
+    box-shadow: 0 0 0.2rem 1px $negative;
+  }
+}
+
+.room-card {
+  box-sizing: border-box;
+
+  &.occupied {
+    border: $room_border_size solid $positive;
+  }
+
+  &.upcoming {
+    border: $room_border_size solid $warning;
+  }
+
+  &.missed {
+    border: $room_border_size solid $warning_accent;
+  }
+
+  &.request {
+    border: $room_border_size solid $negative;
+  }
+
+  &.alarm {
+    animation: pulsate 1s infinite;
+    box-shadow: 0 0 0.2rem 1px $negative;
+  }
+}
+
 $detail_color: #ecf0f1;
 $border_color: #bdc3c7;
 $detail_text: darken($border_color, 25%);
-$option_size: 3.5rem;
+$option_size: 2.8rem;
 
 // patient info
 .patient-info {
   padding: 0.75rem;
   display: flex;
   align-items: center;
+
+  .patient-info__data__name {
+    text-transform: capitalize;
+  }
 
   .patient-info__data {
     padding-left: 0.75rem;
@@ -149,7 +222,7 @@ $option_size: 3.5rem;
 
   .action-info__notify-text {
     margin: 0;
-    font-size: $option_size / 3;
+    font-size: 1.2rem;
     text-align: center;
     font-weight: 500;
     line-height: 1rem;
