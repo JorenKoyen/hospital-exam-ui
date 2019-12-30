@@ -1,43 +1,82 @@
 <template>
-  <q-card class="room-card alarm">
+  <q-card
+    class="room-card"
+    :class="state"
+  >
 
-    <!-- patient info & basic room info -->
-    <section class="patient-info">
+    <!-- room number display -->
+    <section
+      v-if="!hasPatient"
+      class="room-info"
+    >
+      room {{ number }}
+    </section>
+
+    <section
+      v-if="!hasPatient"
+      class="empty-notification"
+    >
+      No patient assigned to this room
+    </section>
+
+    <!-- patient info w/ basic room info -->
+    <section
+      v-if="hasPatient"
+      class="patient-info"
+    >
       <q-avatar
         square
         class="patient-info__avatar"
       >
         <img
-          src="/statics/images/anna.png"
+          :src="patient.avatar"
           alt="patient picture"
           class="patient-info__img"
         >
       </q-avatar>
       <div class="patient-info__data">
-        <span class="patient-info__data__name text-weight-medium">{{ patient }}</span>
-        <span class="patient-info__data__rrnr text-grey">{{ nin }}</span>
+        <span class="patient-info__data__name text-weight-medium">{{ patient.name }}</span>
+        <span class="patient-info__data__rrnr text-grey">{{ patient.ssn }}</span>
       </div>
-      <span class="patient-info__room">room {{ room }}</span>
+      <span class="patient-info__room">room {{ number }}</span>
     </section>
 
     <!-- monitoring info -->
-    <section class="monitoring-info">
+    <section
+      v-if="hasPatient"
+      class="monitoring-info"
+    >
       <div class="monitoring-info__item">
         <q-icon name="fas fa-heartbeat" />
-        <span>{{ heartbeat }}</span>
+        <span>{{ metrics.heartrate }}</span>
       </div>
       <div class="monitoring-info__item">
         <q-icon name="fas fa-tachometer-alt" />
-        <span>{{ upperBloodPressure }}/{{ lowerBloodPressure }}</span>
+        <span>{{ metrics.upperPressure }}/{{ metrics.lowerPressure }}</span>
       </div>
     </section>
 
     <!-- action info, show upcoming actions -->
-    <section class="action-info">
-      <!-- <span class="action-info__no-action">No upcoming action</span> -->
-      <h4 class="action-info__notify-text">Upcoming action</h4>
-      <p class="action-info__timer-text">in 35 minutes</p>
-      <span class="action-info__description">Wash patient</span>
+    <section
+      class="action-info"
+      v-if="hasPatient"
+    >
+      <span
+        v-if="!hasAction"
+        class="action-info__no-action"
+      >No upcoming action</span>
+      <h4
+        v-if="hasAction"
+        class="action-info__notify-text"
+      >{{ state }} action</h4>
+      <p
+        v-if="hasAction"
+        class="action-info__timer-text"
+      >{{ actionDifference }}</p>
+      <span
+        v-if="hasAction"
+        class="action-info__description"
+      >{{ actionDescription }}</span>
     </section>
 
     <!-- facilities, show available facilities -->
@@ -52,7 +91,10 @@
     </section>
 
     <!-- provide links to interesting pages in reference to room and patient -->
-    <section class="nav-actions">
+    <section
+      v-if="hasPatient"
+      class="nav-actions"
+    >
       <q-btn
         icon="fas fa-file-medical-alt"
         label="Medical file"
@@ -64,20 +106,27 @@
 </template>
 
 <script>
+import helper from '../api/helper';
+import { error } from '../util/notify';
+import _ from 'lodash';
+import moment from 'moment';
 export default {
   name: 'RoomCard',
   data: () => ({
-    nin: '',
-    number: 0,
-    upperBloodPressure: 0,
-    lowerBloodPressure: 0,
-    heartbeat: 0,
+    patient: {},
+    metrics: {},
+    action: {},
+    hospId: '',
     availableFacilities: [
       { name: 'toilet', icon: 'fas fa-toilet' },
       { name: 'shower', icon: 'fas fa-shower' },
       { name: 'tv', icon: 'fas fa-tv' },
       { name: 'childsupport', icon: 'fas fa-baby' }
-    ]
+    ],
+    request: false,
+    critical: false,
+    metricInterval: undefined,
+    actionInterval: undefined
   }),
   props: {
     room: {
@@ -88,22 +137,87 @@ export default {
       type: Array,
       default: () => []
     },
-    patient: {
-      type: String,
+    number: {
+      type: Number,
       required: true
     }
   },
   methods: {
-    setupPatientTimer () {
-      // TODO: fetch data from API
-      this.nin = '99071200121';
-      this.upperBloodPressure = 120;
-      this.lowerBloodPressure = 80;
-      this.heartbeat = 60;
+    async loadRoomData () {
+      // get basic room data
+      await this.fetchPatientData();
+
+      // if patient setup timer & get upcoming action
+      if (this.hasPatient) {
+        await this.setupActionTimer();
+        await this.setupMetricsTimer();
+      }
+    },
+    async fetchPatientData () {
+      // get basic patient info from API
+      const hosp = await helper({ resource: `hospitalizations?roomId=${this.room}&_expand=patient` })
+        .catch(() => error(this.$q.notify, 'An unexpected error has occured', 'Unable to fetch patient from API'));
+
+      // check if patient is checked in for this room
+      if (hosp.length === 0) return;
+      const { patient, id } = hosp[0];
+
+      // update state
+      this.patient = patient;
+      this.hospId = id;
+    },
+    async setupMetricsTimer () {
+      // clear previous interval if any
+      if (this.metricInterval) {
+        clearInterval(this.metricInterval);
+      }
+
+      // prefetch first round of metrics
+      this.updateMetrics();
+
+      // start timer task
+      this.metricInterval = setInterval(this.updateMetrics, 5000);
+    },
+    async setupActionTimer () {
+      // clear previous interval if any
+      if (this.actionInterval) {
+        clearInterval(this.actionInterval);
+      }
+
+      // prefetch first action
+      this.fetchAction();
+
+      // start timer task
+      this.actionInterval = setInterval(this.fetchAction, 1000 * 35);
+    },
+    async fetchAction () {
+      // get first action from API
+      const results = await helper({ resource: `hospitalizations/${this.hospId}/actions?_sort=timestamp&_order=asc` });
+
+      // filter only upcoming actions
+      const upcoming = [...results.filter(a => !a.completed)];
+      const next = upcoming.shift();
+
+      if (next) {
+        this.action = next;
+      }
+    },
+    async updateMetrics () {
+      const metrics = await helper({ resource: `metrics/${this.patient.id}` });
+      this.metrics = metrics;
     }
   },
   mounted () {
-    this.setupPatientTimer();
+    this.loadRoomData();
+  },
+  beforeDestroy () {
+    if (this.metricInterval) {
+      clearInterval(this.metricInterval);
+    }
+
+    if (this.actionInterval) {
+      clearInterval(this.actionInterval);
+    }
   },
   computed: {
     facilitiesList () {
@@ -111,11 +225,34 @@ export default {
         f.available = this.facilities.includes(f.name);
         return f;
       });
+    },
+    hasPatient () {
+      return !_.isEmpty(this.patient);
+    },
+    hasAction () {
+      return !_.isEmpty(this.action);
+    },
+    actionDifference () {
+      return moment(this.action.timestamp).fromNow();
+    },
+    actionDescription () {
+      return 'test';
+    },
+    state () {
+      if (this.critical) return 'alarm';
+      if (this.request) return 'request';
+      if (this.hasAction) {
+        const missed = moment().isAfter(moment(this.action.timestamp));
+        return missed ? 'missed' : 'upcoming';
+      }
+      if (this.hasPatient) return 'occupied';
+
+      return 'free';
     }
   },
   watch: {
-    patient: function (val) {
-      this.setupPatientTimer();
+    room: function (val) {
+      this.loadRoomData();
     }
   }
 };
@@ -136,22 +273,25 @@ $room_border_size: 0.25rem;
 }
 
 .room-card {
-  box-sizing: border-box;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 
   &.occupied {
-    border: $room_border_size solid $positive;
+    box-shadow: 0 0 0.2rem 2px $positive;
   }
 
   &.upcoming {
-    border: $room_border_size solid $warning;
+    box-shadow: 0 0 0.2rem 2px $warning;
   }
 
   &.missed {
-    border: $room_border_size solid $warning_accent;
+    box-shadow: 0 0 0.2rem 2px $warning_accent;
   }
 
   &.request {
-    border: $room_border_size solid $negative;
+    box-shadow: 0 0 0.4rem 3px $negative;
   }
 
   &.alarm {
@@ -164,6 +304,24 @@ $detail_color: #ecf0f1;
 $border_color: #bdc3c7;
 $detail_text: darken($border_color, 25%);
 $option_size: 2.8rem;
+
+// room-info
+.room-info {
+  padding: 0.75rem;
+  font-variant: small-caps;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+// empty-notification
+.empty-notification {
+  padding: 0.75rem;
+  text-align: center;
+  background-color: $detail_color;
+  border-top: 1px solid $border_color;
+  border-bottom: 1px solid $border_color;
+  color: $detail_text;
+}
 
 // patient info
 .patient-info {

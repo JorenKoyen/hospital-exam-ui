@@ -1,38 +1,14 @@
 <template>
   <div class="grid">
-    <div class="grid-item">
+    <div
+      v-for="r in rooms"
+      :key="r.id"
+      class="grid-item"
+    >
       <room-card
-        room="205A"
-        :facilities="['toilet', 'shower', 'tv']"
-        patient="anna kendrick"
-      />
-    </div>
-    <div class="grid-item">
-      <room-card
-        room="205B"
-        :facilities="['toilet', 'tv']"
-        patient="henry cavill"
-      />
-    </div>
-    <div class="grid-item">
-      <room-card
-        room="206A"
-        :facilities="['toilet', 'shower', 'childsupport']"
-        patient="freya allan"
-      />
-    </div>
-    <div class="grid-item">
-      <room-card
-        room="206B"
-        :facilities="['toilet', 'shower', 'tv']"
-        patient="anya chalotra"
-      />
-    </div>
-    <div class="grid-item">
-      <room-card
-        room="207A"
-        :facilities="['toilet', 'shower', 'tv']"
-        patient="mimi ndiweni"
+        :room="r.id"
+        :number="r.number"
+        :facilities="r.facilities"
       />
     </div>
   </div>
@@ -40,10 +16,29 @@
 
 <script>
 import RoomCard from 'components/room-card.vue';
+import helper from '../api/helper';
+import { error } from '../util/notify';
 export default {
   name: 'PageRoomsOverview',
   components: {
     RoomCard
+  },
+  data: function () {
+    return {
+      rooms: []
+    };
+  },
+  mounted: function () {
+    this.loadRooms();
+  },
+  methods: {
+    async loadRooms () {
+      const dep = this.$router.currentRoute.params.id;
+      const rooms = await helper({ resource: `departments/${dep}/rooms` })
+        .catch(() => error(this.$q.notify, 'An unexpected error has occured', 'Unable to fetch rooms from API'));
+
+      this.rooms = rooms;
+    }
   }
 };
 </script>
