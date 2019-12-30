@@ -3,111 +3,122 @@
     class="room-card"
     :class="state"
   >
-
-    <!-- room number display -->
-    <section
-      v-if="!hasPatient"
-      class="room-info"
+    <div
+      class="room-content"
+      v-show="!loading"
     >
-      room {{ number }}
-    </section>
-
-    <section
-      v-if="!hasPatient"
-      class="empty-notification"
-    >
-      No patient assigned to this room
-    </section>
-
-    <!-- patient info w/ basic room info -->
-    <section
-      v-if="hasPatient"
-      class="patient-info"
-    >
-      <q-avatar
-        square
-        class="patient-info__avatar"
+      <!-- room number display -->
+      <section
+        v-if="!hasPatient"
+        class="room-info"
       >
-        <img
-          :src="patient.avatar"
-          alt="patient picture"
-          class="patient-info__img"
+        room {{ number }}
+      </section>
+
+      <section
+        v-if="!hasPatient"
+        class="empty-notification"
+      >
+        No patient assigned to this room
+      </section>
+
+      <!-- patient info w/ basic room info -->
+      <section
+        v-if="hasPatient"
+        class="patient-info"
+      >
+        <q-avatar
+          square
+          class="patient-info__avatar"
         >
-      </q-avatar>
-      <div class="patient-info__data">
-        <span class="patient-info__data__name text-weight-medium">{{ patient.name }}</span>
-        <span class="patient-info__data__rrnr text-grey">{{ patient.ssn }}</span>
-      </div>
-      <span class="patient-info__room">room {{ number }}</span>
-    </section>
+          <img
+            :src="patient.avatar"
+            alt="patient picture"
+            class="patient-info__img"
+          >
+        </q-avatar>
+        <div class="patient-info__data">
+          <span class="patient-info__data__name text-weight-medium">{{ patient.name }}</span>
+          <span class="patient-info__data__rrnr text-grey">{{ patient.ssn }}</span>
+        </div>
+        <span class="patient-info__room">room {{ number }}</span>
+      </section>
 
-    <!-- monitoring info -->
-    <section
-      v-if="hasPatient"
-      class="monitoring-info"
-    >
-      <div class="monitoring-info__item">
-        <q-icon name="fas fa-heartbeat" />
-        <span>{{ metrics.heartrate }}</span>
-      </div>
-      <div class="monitoring-info__item">
-        <q-icon name="fas fa-tachometer-alt" />
-        <span>{{ metrics.upperPressure }}/{{ metrics.lowerPressure }}</span>
-      </div>
-    </section>
+      <!-- monitoring info -->
+      <section
+        v-if="hasPatient"
+        class="monitoring-info"
+      >
+        <div class="monitoring-info__item">
+          <q-icon name="fas fa-heartbeat" />
+          <span>{{ metrics.heartrate }}</span>
+        </div>
+        <div class="monitoring-info__item">
+          <q-icon name="fas fa-tachometer-alt" />
+          <span>{{ metrics.upperPressure }}/{{ metrics.lowerPressure }}</span>
+        </div>
+      </section>
 
-    <!-- action info, show upcoming actions -->
-    <section
-      class="action-info"
-      v-if="hasPatient"
-    >
-      <span
-        v-if="!hasAction"
-        class="action-info__no-action"
-      >No upcoming action</span>
-      <h4
-        v-if="hasAction"
-        class="action-info__notify-text"
-      >{{ state }} action</h4>
-      <p
-        v-if="hasAction"
-        class="action-info__timer-text"
-      >{{ actionDifference }}</p>
-      <span
-        v-if="hasAction"
-        class="action-info__description"
-      >{{ actionDescription }}</span>
-    </section>
+      <!-- action info, show upcoming actions -->
+      <section
+        class="action-info"
+        v-if="hasPatient"
+      >
+        <span
+          v-if="!hasAction"
+          class="action-info__no-action"
+        >No upcoming action</span>
+        <p
+          v-if="hasAction"
+          class="action-info__timer-text"
+        >{{ actionDifference }}</p>
+        <span
+          v-if="hasAction"
+          class="action-info__description"
+        >{{ actionDescription }}</span>
+      </section>
 
-    <!-- facilities, show available facilities -->
-    <section class="facilities">
-      <q-icon
-        v-for="fac in facilitiesList"
-        :key="fac.name"
-        class="facilities__option"
-        :class="{available: fac.available}"
-        :name="fac.icon"
-      />
-    </section>
+      <!-- facilities, show available facilities -->
+      <section class="facilities">
+        <q-icon
+          v-for="fac in facilitiesList"
+          :key="fac.name"
+          class="facilities__option"
+          :class="{available: fac.available}"
+          :name="fac.icon"
+        />
+      </section>
 
-    <!-- provide links to interesting pages in reference to room and patient -->
-    <section
-      v-if="hasPatient"
-      class="nav-actions"
-    >
-      <q-btn
-        icon="fas fa-file-medical-alt"
-        label="Medical file"
-        flat
-        class="text-grey-8"
-      />
-    </section>
+      <!-- provide links to interesting pages in reference to room and patient -->
+      <section
+        v-if="hasPatient"
+        class="nav-actions"
+      >
+        <q-btn
+          icon="fas fa-file-medical-alt"
+          label="Medical file"
+          flat
+          class="text-grey-8"
+        />
+      </section>
+    </div>
+
+    <template v-if="loading">
+      <section class="loading-section">
+        <q-spinner-tail
+          size="1rem"
+          color="primary"
+        />
+      </section>
+    </template>
+
   </q-card>
 </template>
 
 <script>
 import helper from '../api/helper';
 import { error } from '../util/notify';
+import { isBetween } from '../util/helpers';
 import _ from 'lodash';
 import moment from 'moment';
 export default {
@@ -126,7 +137,8 @@ export default {
     request: false,
     critical: false,
     metricInterval: undefined,
-    actionInterval: undefined
+    actionInterval: undefined,
+    loading: false
   }),
   props: {
     room: {
@@ -144,6 +156,9 @@ export default {
   },
   methods: {
     async loadRoomData () {
+      // signal start of loading
+      this.loading = true;
+
       // get basic room data
       await this.fetchPatientData();
 
@@ -152,6 +167,9 @@ export default {
         await this.setupActionTimer();
         await this.setupMetricsTimer();
       }
+
+      // signal end of loading
+      this.loading = false;
     },
     async fetchPatientData () {
       // get basic patient info from API
@@ -173,7 +191,7 @@ export default {
       }
 
       // prefetch first round of metrics
-      this.updateMetrics();
+      await this.updateMetrics();
 
       // start timer task
       this.metricInterval = setInterval(this.updateMetrics, 5000);
@@ -185,7 +203,7 @@ export default {
       }
 
       // prefetch first action
-      this.fetchAction();
+      await this.fetchAction();
 
       // start timer task
       this.actionInterval = setInterval(this.fetchAction, 1000 * 35);
@@ -236,9 +254,14 @@ export default {
       return moment(this.action.timestamp).fromNow();
     },
     actionDescription () {
-      return 'test';
+      if (this.action.description) return this.action.description;
+      if (this.action.type === 'meal') return 'Bring food to patient';
+      if (this.action.type === 'wash') return 'Cleanse the patient';
+      if (this.action.type === 'bedsore') return 'Turn patient around to prevent bedsores';
+      return 'Unrecognized action, contact administrator';
     },
     state () {
+      if (this.loading) return '';
       if (this.critical) return 'alarm';
       if (this.request) return 'request';
       if (this.hasAction) {
@@ -253,6 +276,20 @@ export default {
   watch: {
     room: function (val) {
       this.loadRoomData();
+    },
+    metrics: function (val) {
+      const heartrate = [40, 170];
+      const upperPressure = [90, 155];
+      const lowerPressure = [50, 90];
+
+      if (!isBetween(val.heartrate, heartrate[0], heartrate[1]) ||
+        !isBetween(val.upperPressure, upperPressure[0], upperPressure[1]) ||
+        !isBetween(val.lowerPressure, lowerPressure[0], lowerPressure[1])) {
+        this.critical = true;
+        return;
+      }
+
+      if (this.critical === true) this.critical = false;
     }
   }
 };
@@ -274,9 +311,6 @@ $room_border_size: 0.25rem;
 
 .room-card {
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 
   &.occupied {
     box-shadow: 0 0 0.2rem 2px $positive;
@@ -300,6 +334,13 @@ $room_border_size: 0.25rem;
   }
 }
 
+.room-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
 $detail_color: #ecf0f1;
 $border_color: #bdc3c7;
 $detail_text: darken($border_color, 25%);
@@ -311,6 +352,13 @@ $option_size: 2.8rem;
   font-variant: small-caps;
   text-align: center;
   font-size: 1.5rem;
+}
+
+// loading section
+.loading-section {
+  display: flex;
+  padding: 0.75rem;
+  justify-content: center;
 }
 
 // empty-notification
@@ -376,16 +424,6 @@ $option_size: 2.8rem;
     display: block;
     text-align: center;
     color: $detail_text;
-  }
-
-  .action-info__notify-text {
-    margin: 0;
-    font-size: 1.2rem;
-    text-align: center;
-    font-weight: 500;
-    line-height: 1rem;
-    text-transform: uppercase;
-    color: $warning_accent;
   }
 
   .action-info__timer-text {
