@@ -99,6 +99,7 @@
           label="Medical file"
           flat
           class="text-grey-8"
+          @click="goToMedicalFile"
         />
       </section>
     </div>
@@ -223,6 +224,9 @@ export default {
     async updateMetrics () {
       const metrics = await helper({ resource: `metrics/${this.patient.id}` });
       this.metrics = metrics;
+    },
+    goToMedicalFile () {
+      this.$router.push({ path: '/patient/' + this.patient.id });
     }
   },
   mounted () {

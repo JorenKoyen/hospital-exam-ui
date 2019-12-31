@@ -32,3 +32,16 @@ $grid-padding: .75rem;
 
   }
 }
+
+// grid with 2 cols
+.grid.width-2 {
+  .grid-item {
+    
+    // 2 next to each other when > medium
+    @media screen and (min-width: $break-medium) {
+      flex-basis: calc(50% - #{$grid-padding});
+      max-width: calc(50% - #{$grid-padding});
+    }
+
+  }
+}

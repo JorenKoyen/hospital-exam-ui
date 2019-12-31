@@ -1,10 +1,13 @@
 
 const routes = [
   {
-    path: '/departments',
+    path: '/',
     component: () => import('layouts/DefaultLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/Departments.vue') }
+      // TODO: add dashboard with overview of the hospital
+      { path: 'departments', component: () => import('pages/Departments.vue') },
+      // TODO: add patient overview page -> simple list of patients with link to detail page
+      { path: 'patient/:id', component: () => import('pages/PatientDetail.vue') }
     ]
   },
   {

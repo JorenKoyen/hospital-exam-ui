@@ -37,7 +37,7 @@ export default {
       const rooms = await helper({ resource: `departments/${dep}/rooms` })
         .catch(() => error(this.$q.notify, 'An unexpected error has occured', 'Unable to fetch rooms from API'));
 
-      this.rooms = rooms;
+      this.rooms = rooms.sort((a, b) => a.number - b.number);
     }
   }
 };
