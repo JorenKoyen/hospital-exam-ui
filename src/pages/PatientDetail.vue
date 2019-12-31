@@ -16,7 +16,7 @@
       </div>
       <!-- hospitalization info (department, room, date, reason, ...) -->
       <div class="grid-item">
-
+        <hospitalization-card />
       </div>
     </div>
 
@@ -42,11 +42,13 @@
 
 <script>
 import PatientInfoCard from 'components/patient-info-card.vue';
+import HospitalizationCard from 'components/hospitalization-card.vue';
 import { progressFetch } from '../api/helper';
 export default {
   name: 'PatientDetailPage',
   components: {
-    PatientInfoCard
+    PatientInfoCard,
+    HospitalizationCard
   },
   data: function () {
     return {
@@ -75,7 +77,7 @@ export default {
         // graceful state update
         setTimeout(() => {
           this.loading = false;
-        }, 500);
+        }, 250);
       }
 
       // increment loading state
