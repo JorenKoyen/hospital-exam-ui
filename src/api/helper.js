@@ -1,4 +1,6 @@
-const base = 'http://localhost:3000/';
+import { uniqueByProperty } from '../util/helpers';
+
+const base = 'http://172.16.0.142:3000/';
 
 export default async function helper ({ resource, method = 'GET', body }) {
   const resp = await fetch(base + resource, {
@@ -12,6 +14,35 @@ export default async function helper ({ resource, method = 'GET', body }) {
   return resp;
 }
 
+export async function multiFetch (urls = [], cb) {
+  const history = [];
+  const callbackCollector = function (id, received, total) {
+    // push record into history
+    history.push({ id, received, total });
+
+    // distinct history by id
+    const distinctHistory = uniqueByProperty(history, h => h.id);
+    if (distinctHistory.length !== urls.length) return;
+
+    // get total amount that is expected to be received
+    const totalOfAllCals = distinctHistory
+      .map(h => h.total)
+      .reduce((acc, curr) => acc + curr);
+
+    // get total amount of currently received
+    const totalReceived = history
+      .map(h => h.received)
+      .reduce((acc, curr) => acc + curr);
+
+    // send out actual callback
+    cb(totalReceived, totalOfAllCals);
+  };
+
+  const calls = urls.map(url => progressFetch({ resource: url }, (rec, tot) => callbackCollector(url, rec, tot)));
+  const values = await Promise.all(calls);
+
+  return values;
+}
 export async function progressFetch ({ resource, method = 'GET', body }, cb) {
   const response = await fetch(base + resource, {
     method,

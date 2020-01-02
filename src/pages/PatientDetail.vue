@@ -16,7 +16,12 @@
       </div>
       <!-- hospitalization info (department, room, date, reason, ...) -->
       <div class="grid-item">
-        <hospitalization-card />
+        <hospitalization-card
+          :department="hospitalization.department"
+          :room="hospitalization.room.number"
+          :hospitalizedOn="hospitalization.hospitalizedOn"
+          :reason="hospitalization.reason"
+        />
       </div>
     </div>
 
@@ -43,7 +48,7 @@
 <script>
 import PatientInfoCard from 'components/patient-info-card.vue';
 import HospitalizationCard from 'components/hospitalization-card.vue';
-import { progressFetch } from '../api/helper';
+import { multiFetch } from '../api/helper';
 export default {
   name: 'PatientDetailPage',
   components: {
@@ -53,7 +58,8 @@ export default {
   data: function () {
     return {
       loading: true,
-      patient: {}
+      patient: {},
+      hospitalization: {}
     };
   },
   methods: {
@@ -63,12 +69,21 @@ export default {
 
       // fetch patient info
       const id = this.$router.currentRoute.params.id;
-      const patient = await progressFetch({ resource: 'patients/' + id }, this.updateBar);
+      const values = await multiFetch([
+        `patients/${id}`,
+        `patients/${id}/hospitalizations?_expand=room&_expand=doctor`
+      ], this.updateBar);
+      // const patient = await progressFetch({ resource: 'patients/' + id }, this.updateBar);
+
+      // // fetch hospitalization info
+      // const hospitalization = await progressFetch({ resource: 'patients/' + id + '/hospitalizations?_expand=room&_expand=doctor' }, this.updateBar);
 
       // update state
-      this.patient = patient;
+      this.patient = values[0];
+      this.hospitalization = values[1][0];
     },
     updateBar (received, total) {
+      console.log({ received, total });
       if (!this.$refs.bar) return;
 
       // notify loading is done
