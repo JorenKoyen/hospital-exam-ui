@@ -55,7 +55,7 @@ export default {
       return moment(this.hospitalizedOn).fromNow(false);
     },
     date () {
-      return moment(this.hospitalizedOn).format('lll');
+      return moment(this.hospitalizedOn).format('ll');
     }
   }
 };
