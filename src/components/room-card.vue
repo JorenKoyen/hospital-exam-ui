@@ -259,9 +259,9 @@ export default {
     },
     actionDescription () {
       if (this.action.description) return this.action.description;
-      if (this.action.type === 'meal') return 'Bring food to patient';
-      if (this.action.type === 'wash') return 'Cleanse the patient';
-      if (this.action.type === 'bedsore') return 'Turn patient around to prevent bedsores';
+      if (this.action.typeId === 'meal') return 'Bring food to patient';
+      if (this.action.typeId === 'wash') return 'Cleanse the patient';
+      if (this.action.typeId === 'bedsore') return 'Turn patient around to prevent bedsores';
       return 'Unrecognized action, contact administrator';
     },
     state () {
