@@ -38,12 +38,12 @@ export async function multiFetch (urls = [], cb) {
     cb(totalReceived, totalOfAllCals);
   };
 
-  const calls = urls.map(url => progressFetch({ resource: url }, (rec, tot) => callbackCollector(url, rec, tot)));
+  const calls = urls.map(url => progressFetch({ resource: url.url, singleItem: url.single }, (rec, tot) => callbackCollector(url.url, rec, tot)));
   const values = await Promise.all(calls);
 
   return values;
 }
-export async function progressFetch ({ resource, method = 'GET', body }, cb) {
+export async function progressFetch ({ resource, method = 'GET', body, singleItem = false }, cb) {
   const response = await fetch(base + resource, {
     method,
     body: JSON.stringify(body),
@@ -84,5 +84,13 @@ export async function progressFetch ({ resource, method = 'GET', body }, cb) {
 
   // decode into a string
   const str = new TextDecoder('utf-8').decode(all);
-  return JSON.parse(str);
+  const val = JSON.parse(str);
+  return singleItem ? parseReponse(val) : val;
+}
+
+function parseReponse (response) {
+  // if no array -> return response
+  if (!Array.isArray(response)) return response;
+
+  if (response.length === 1) return response[0];
 }

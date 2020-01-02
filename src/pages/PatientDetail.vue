@@ -13,6 +13,8 @@
           :hospitalized="patient.hospitalized"
           :contactInfo="patient.contact"
         />
+        <div class="grid-spacer"></div>
+        <patient-meta-card :patient="patient.id" />
       </div>
       <!-- hospitalization info (department, room, date, reason, ...) -->
       <div class="grid-item">
@@ -23,13 +25,11 @@
           :reason="hospitalization.reason"
         />
       </div>
-    </div>
 
-    <div class="row">
       <!-- meta information (vegan, comments, ...) -->
-      <div class="col"></div>
+      <div class="grid-item"></div>
       <!-- assigned doctor (name, avatar, ...) -->
-      <div class="col"></div>
+      <div class="grid-item"></div>
     </div>
 
     <!-- actions list (type, description, date, ...) -->
@@ -48,12 +48,14 @@
 <script>
 import PatientInfoCard from 'components/patient-info-card.vue';
 import HospitalizationCard from 'components/hospitalization-card.vue';
+import PatientMetaCard from 'components/patient-meta-card.vue';
 import { multiFetch } from '../api/helper';
 export default {
   name: 'PatientDetailPage',
   components: {
     PatientInfoCard,
-    HospitalizationCard
+    HospitalizationCard,
+    PatientMetaCard
   },
   data: function () {
     return {
@@ -70,20 +72,15 @@ export default {
       // fetch patient info
       const id = this.$router.currentRoute.params.id;
       const values = await multiFetch([
-        `patients/${id}`,
-        `patients/${id}/hospitalizations?_expand=room&_expand=doctor`
+        { url: `patients/${id}`, single: true },
+        { url: `patients/${id}/hospitalizations?_expand=room&_expand=doctor`, single: true }
       ], this.updateBar);
-      // const patient = await progressFetch({ resource: 'patients/' + id }, this.updateBar);
-
-      // // fetch hospitalization info
-      // const hospitalization = await progressFetch({ resource: 'patients/' + id + '/hospitalizations?_expand=room&_expand=doctor' }, this.updateBar);
 
       // update state
       this.patient = values[0];
-      this.hospitalization = values[1][0];
+      this.hospitalization = values[1];
     },
     updateBar (received, total) {
-      console.log({ received, total });
       if (!this.$refs.bar) return;
 
       // notify loading is done
