@@ -14,6 +14,7 @@
           :contactInfo="patient.contact"
         />
         <div class="grid-spacer"></div>
+        <!-- meta information (vegan, comments, ...) -->
         <patient-meta-card :patient="patient.id" />
       </div>
       <!-- hospitalization info (department, room, date, reason, ...) -->
@@ -24,12 +25,15 @@
           :hospitalizedOn="hospitalization.hospitalizedOn"
           :reason="hospitalization.reason"
         />
+        <div class="grid-spacer"></div>
+        <!-- assigned doctor (name, avatar, ...) -->
+        <doctor-card
+          :avatar="hospitalization.doctor.avatar"
+          :name="hospitalization.doctor.name"
+          :hiredOn="hospitalization.doctor.hiredOn"
+        />
       </div>
 
-      <!-- meta information (vegan, comments, ...) -->
-      <div class="grid-item"></div>
-      <!-- assigned doctor (name, avatar, ...) -->
-      <div class="grid-item"></div>
     </div>
 
     <!-- actions list (type, description, date, ...) -->
@@ -49,13 +53,15 @@
 import PatientInfoCard from 'components/patient-info-card.vue';
 import HospitalizationCard from 'components/hospitalization-card.vue';
 import PatientMetaCard from 'components/patient-meta-card.vue';
+import DoctorCard from 'components/doctor-card.vue';
 import { multiFetch } from '../api/helper';
 export default {
   name: 'PatientDetailPage',
   components: {
     PatientInfoCard,
     HospitalizationCard,
-    PatientMetaCard
+    PatientMetaCard,
+    DoctorCard
   },
   data: function () {
     return {
