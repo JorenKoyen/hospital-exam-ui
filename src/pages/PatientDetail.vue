@@ -32,11 +32,13 @@
           :name="hospitalization.doctor.name"
           :hiredOn="hospitalization.doctor.hiredOn"
         />
+        <div class="grid-spacer"></div>
+        <!-- actions list (type, description, date, ...) -->
+        <action-list-card :hospitalization="hospitalization.id" />
       </div>
 
     </div>
 
-    <!-- actions list (type, description, date, ...) -->
   </div>
   <div v-else>
     <q-ajax-bar
@@ -54,6 +56,7 @@ import PatientInfoCard from 'components/patient-info-card.vue';
 import HospitalizationCard from 'components/hospitalization-card.vue';
 import PatientMetaCard from 'components/patient-meta-card.vue';
 import DoctorCard from 'components/doctor-card.vue';
+import ActionListCard from 'components/action-list-card.vue';
 import { multiFetch } from '../api/helper';
 export default {
   name: 'PatientDetailPage',
@@ -61,7 +64,8 @@ export default {
     PatientInfoCard,
     HospitalizationCard,
     PatientMetaCard,
-    DoctorCard
+    DoctorCard,
+    ActionListCard
   },
   data: function () {
     return {
@@ -79,7 +83,8 @@ export default {
       const id = this.$router.currentRoute.params.id;
       const values = await multiFetch([
         { url: `patients/${id}`, single: true },
-        { url: `patients/${id}/hospitalizations?_expand=room&_expand=doctor`, single: true }
+        { url: `patients/${id}/hospitalizations?_expand=room&_expand=doctor`, single: true },
+        { url: `hospitalizations/${id}/actions?_expand=type` }
       ], this.updateBar);
 
       // update state

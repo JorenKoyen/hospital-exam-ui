@@ -35,7 +35,9 @@ export async function multiFetch (urls = [], cb) {
       .reduce((acc, curr) => acc + curr);
 
     // send out actual callback
-    cb(totalReceived, totalOfAllCals);
+    if (cb) {
+      cb(totalReceived, totalOfAllCals);
+    }
   };
 
   const calls = urls.map(url => progressFetch({ resource: url.url, singleItem: url.single }, (rec, tot) => callbackCollector(url.url, rec, tot)));
