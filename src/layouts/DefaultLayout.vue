@@ -27,9 +27,15 @@
       <q-list>
         <q-item to='/departments'>
           <q-item-section avatar>
-            <q-icon name="business" />
+            <q-icon name="far fa-building" />
           </q-item-section>
           <q-item-section>Departments</q-item-section>
+        </q-item>
+        <q-item to='/departments'>
+          <q-item-section avatar>
+            <q-icon name="far fa-map" />
+          </q-item-section>
+          <q-item-section>Floorplan</q-item-section>
         </q-item>
       </q-list>
     </q-drawer>
