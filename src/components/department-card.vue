@@ -15,8 +15,8 @@
     <section class="department-card__link">
       <a
         :href="`/departments/${name}`"
-        @click="e => go(e, `/departments/${name}`)"
-      >Explore resources
+        @click="e => go(e, `/departments/${name}/rooms`)"
+      >Explore rooms
         <q-icon name="keyboard_arrow_right" />
       </a>
     </section>
