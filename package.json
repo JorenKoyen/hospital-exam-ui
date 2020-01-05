@@ -1,6 +1,6 @@
 {
   "name": "hospitalizr",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A user interfaces 3 project",
   "productName": "Hospitalizr",
   "cordovaId": "org.cordova.quasar.app",
