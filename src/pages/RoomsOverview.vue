@@ -51,15 +51,26 @@
           :room="r.id"
           :number="r.number"
           :facilities="r.facilities"
+          @alarm="onAlarm"
+          @alarmEnd="onAlarmEnd"
         />
       </div>
     </div>
 
+    <!-- floorplan view -->
     <floorplan-viewer
       v-if="!detail"
       :department="$route.params.id"
+      @alarm="onAlarm"
+      @alarmEnd="onAlarmEnd"
     />
 
+    <audio
+      v-if="soundAlarm"
+      src="/statics/alarm.mp3"
+      autoplay
+      loop
+    />
   </div>
 </template>
 
@@ -68,6 +79,7 @@ import RoomCard from 'components/room-card.vue';
 import FloorplanViewer from 'components/floorplan-viewer.vue';
 import helper from '../api/helper';
 import { error } from '../util/notify';
+import { getSettings } from '../util/settings';
 export default {
   name: 'PageRoomsOverview',
   components: {
@@ -78,7 +90,8 @@ export default {
     return {
       detail: true,
       rooms: [],
-      hasFloorplan: false
+      hasFloorplan: false,
+      alarmingRooms: []
     };
   },
   mounted: function () {
@@ -94,6 +107,20 @@ export default {
         .catch(() => error(this.$q.notify, 'An unexpected error has occured', 'Unable to fetch rooms from API'));
 
       this.rooms = rooms.sort((a, b) => a.number - b.number);
+    },
+    onAlarm (room) {
+      this.alarmingRooms.push(room);
+    },
+    onAlarmEnd (room) {
+      this.alarmingRooms.splice(this.alarmingRooms.indexOf(room), 1);
+    }
+  },
+  computed: {
+    soundAlarm () {
+      const settings = getSettings();
+      const alarm = this.alarmingRooms.length > 0;
+
+      return settings.soundAlarm && alarm;
     }
   }
 };

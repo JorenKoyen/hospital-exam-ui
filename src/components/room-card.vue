@@ -323,6 +323,10 @@ export default {
       }
 
       if (this.critical === true) this.critical = false;
+    },
+    critical: function (val) {
+      if (val) this.$emit('alarm', this.room);
+      else this.$emit('alarmEnd', this.room);
     }
   }
 };
