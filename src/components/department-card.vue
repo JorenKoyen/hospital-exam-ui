@@ -18,11 +18,6 @@
         @click="e => go(e, `/departments/${name}/rooms`)"
       >Explore rooms
       </a>
-      <a
-        :href="`/departments/${name}`"
-        @click="e => go(e, `/departments/${name}`)"
-      >View details
-      </a>
     </section>
   </q-card>
 </template>

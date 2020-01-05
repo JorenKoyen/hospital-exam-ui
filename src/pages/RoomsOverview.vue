@@ -13,10 +13,7 @@
           icon="business"
           to="/departments"
         />
-        <q-breadcrumbs-el
-          :label="$route.params.id"
-          :to="'/departments/' + $route.params.id"
-        />
+        <q-breadcrumbs-el :label="$route.params.id" />
         <q-breadcrumbs-el label="rooms" />
       </q-breadcrumbs>
 
