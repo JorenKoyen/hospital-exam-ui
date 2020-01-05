@@ -1,7 +1,7 @@
 <template>
   <q-card
     class="room-card"
-    :class="state"
+    :class="cardStyle"
   >
     <div
       class="room-content"
@@ -153,6 +153,10 @@ export default {
     number: {
       type: Number,
       required: true
+    },
+    compact: {
+      type: Boolean,
+      default: false
     }
   },
   methods: {
@@ -270,11 +274,24 @@ export default {
       if (this.request) return 'request';
       if (this.hasAction) {
         const missed = moment().isAfter(moment(this.action.timestamp));
-        return missed ? 'missed' : 'upcoming';
+        if (missed) return 'missed';
+        if (this.hasUpcoming) return 'upcoming';
       }
       if (this.hasPatient) return 'occupied';
 
       return 'free';
+    },
+    hasUpcoming () {
+      if (!this.hasAction) return false;
+
+      return true;
+    },
+    cardStyle () {
+      const styles = {};
+      styles[this.state] = true;
+      styles['compact'] = this.compact;
+
+      return styles;
     }
   },
   watch: {
@@ -315,6 +332,7 @@ $room_border_size: 0.25rem;
 
 .room-card {
   height: 100%;
+  min-height: 15rem;
 
   &.occupied {
     box-shadow: 0 0 0.2rem 2px $positive;
@@ -472,5 +490,28 @@ $option_size: 2.8rem;
 .nav-actions {
   padding: 0.75rem;
   text-align: center;
+}
+
+// COMPACT STYLING
+.room-card.compact {
+  height: auto;
+  width: $floor_width;
+  height: $floor_height;
+  font-size: 0.85rem;
+  border-radius: unset;
+
+  .action-info {
+    padding: 0.75rem;
+  }
+
+  .facilities__option {
+    font-size: 0.8rem;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  section {
+    padding: 0.5rem;
+  }
 }
 </style>

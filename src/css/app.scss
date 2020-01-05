@@ -8,5 +8,13 @@ html, body, #q-app, .q-layout, .q-page-container {
   height: 100%;
 } 
 
+// center with flexbox
+.center {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 // import grid
 @import './grid.scss';
