@@ -8,7 +8,8 @@ const routes = [
       { path: 'departments', component: () => import('pages/Departments.vue') },
       { path: 'departments/:id/rooms', component: () => import('pages/RoomsOverview.vue') },
       // TODO: add patient overview page -> simple list of patients with link to detail page
-      { path: 'patient/:id', component: () => import('pages/PatientDetail.vue') }
+      { path: 'patient/:id', component: () => import('pages/PatientDetail.vue') },
+      { path: 'settings', component: () => import('pages/Settings.vue') }
     ]
   }
 ];

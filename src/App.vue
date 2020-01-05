@@ -5,7 +5,11 @@
 </template>
 
 <script>
+import { initSettings } from './util/settings';
 export default {
-  name: 'App'
+  name: 'App',
+  mounted () {
+    initSettings();
+  }
 };
 </script>

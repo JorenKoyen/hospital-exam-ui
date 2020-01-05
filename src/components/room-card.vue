@@ -9,7 +9,7 @@
     >
       <!-- room number display -->
       <section
-        v-if="!hasPatient"
+        v-if="!hasPatient && settings.showNumber"
         class="room-info"
       >
         room {{ number }}
@@ -32,21 +32,28 @@
           class="patient-info__avatar"
         >
           <img
+            v-if="settings.showPatient"
             :src="patient.avatar"
             alt="patient picture"
             class="patient-info__img"
           >
         </q-avatar>
-        <div class="patient-info__data">
+        <div
+          class="patient-info__data"
+          v-if="settings.showPatient"
+        >
           <span class="patient-info__data__name text-weight-medium">{{ patient.name }}</span>
           <span class="patient-info__data__rrnr text-grey">{{ patient.ssn }}</span>
         </div>
-        <span class="patient-info__room">room {{ number }}</span>
+        <span
+          class="patient-info__room"
+          v-if="settings.showNumber"
+        >room {{ number }}</span>
       </section>
 
       <!-- monitoring info -->
       <section
-        v-if="hasPatient"
+        v-if="hasPatient && settings.showMetrics"
         class="monitoring-info"
       >
         <div class="monitoring-info__item">
@@ -62,7 +69,7 @@
       <!-- action info, show upcoming actions -->
       <section
         class="action-info"
-        v-if="hasPatient"
+        v-if="hasPatient && settings.showAction"
       >
         <span
           v-if="!hasAction"
@@ -79,7 +86,10 @@
       </section>
 
       <!-- facilities, show available facilities -->
-      <section class="facilities">
+      <section
+        class="facilities"
+        v-if="settings.showFacilities"
+      >
         <q-icon
           v-for="fac in facilitiesList"
           :key="fac.name"
@@ -120,6 +130,7 @@
 import helper from '../api/helper';
 import { error } from '../util/notify';
 import { isBetween } from '../util/helpers';
+import { getSettings } from '../util/settings';
 import _ from 'lodash';
 import moment from 'moment';
 export default {
@@ -139,7 +150,8 @@ export default {
     critical: false,
     metricInterval: undefined,
     actionInterval: undefined,
-    loading: false
+    loading: false,
+    settings: {}
   }),
   props: {
     room: {
@@ -235,6 +247,7 @@ export default {
   },
   mounted () {
     this.loadRoomData();
+    this.settings = getSettings();
   },
   beforeDestroy () {
     if (this.metricInterval) {
@@ -283,8 +296,11 @@ export default {
     },
     hasUpcoming () {
       if (!this.hasAction) return false;
+      const duration = moment.duration(moment().diff(moment(this.action.timestamp)));
+      const minutes = Math.abs(duration.asMinutes());
 
-      return true;
+      return minutes < this.settings.timer;
+      // return true;
     },
     cardStyle () {
       const styles = {};
@@ -299,13 +315,9 @@ export default {
       this.loadRoomData();
     },
     metrics: function (val) {
-      const heartrate = [40, 170];
-      const upperPressure = [90, 155];
-      const lowerPressure = [50, 90];
-
-      if (!isBetween(val.heartrate, heartrate[0], heartrate[1]) ||
-        !isBetween(val.upperPressure, upperPressure[0], upperPressure[1]) ||
-        !isBetween(val.lowerPressure, lowerPressure[0], lowerPressure[1])) {
+      if (!isBetween(val.heartrate, this.settings.heartrate.min, this.settings.heartrate.max) ||
+        !isBetween(val.upperPressure, this.settings.blood.min, this.settings.blood.max) ||
+        !isBetween(val.lowerPressure, this.settings.blood.min, this.settings.blood.max)) {
         this.critical = true;
         return;
       }
@@ -332,7 +344,7 @@ $room_border_size: 0.25rem;
 
 .room-card {
   height: 100%;
-  min-height: 15rem;
+  min-height: 20rem;
 
   &.occupied {
     box-shadow: 0 0 0.2rem 2px $positive;
@@ -497,6 +509,7 @@ $option_size: 2.8rem;
   height: auto;
   width: $floor_width;
   height: $floor_height;
+  min-height: unset;
   font-size: 0.85rem;
   border-radius: unset;
 

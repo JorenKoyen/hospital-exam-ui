@@ -25,11 +25,21 @@
       bordered
     >
       <q-list>
-        <q-item to='/departments'>
+        <q-item
+          to='/departments'
+          exact
+        >
           <q-item-section avatar>
             <q-icon name="far fa-building" />
           </q-item-section>
           <q-item-section>Departments</q-item-section>
+        </q-item>
+
+        <q-item to='/settings'>
+          <q-item-section avatar>
+            <q-icon name="fas fa-cog" />
+          </q-item-section>
+          <q-item-section>Settings</q-item-section>
         </q-item>
 
       </q-list>
