@@ -1,6 +1,6 @@
 import { uniqueByProperty } from '../util/helpers';
 
-const base = 'http://172.16.0.142:3000/';
+const base = 'http://127.0.0.1:3000/';
 
 export default async function helper ({ resource, method = 'GET', body }) {
   const resp = await fetch(base + resource, {
