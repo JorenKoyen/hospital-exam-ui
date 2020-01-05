@@ -152,7 +152,7 @@ export default {
           r.patientName = hosp.patient.name;
 
           // set upcoming action
-          if (hosp.actions) {
+          if (hosp.actions.length > 0) {
             const actions = hosp.actions.sort((a, b) => a.timestamp - b.timestamp);
             r.upcomingType = actions[0].typeId;
           }
