@@ -17,7 +17,11 @@
         :href="`/departments/${name}`"
         @click="e => go(e, `/departments/${name}/rooms`)"
       >Explore rooms
-        <q-icon name="keyboard_arrow_right" />
+      </a>
+      <a
+        :href="`/departments/${name}`"
+        @click="e => go(e, `/departments/${name}`)"
+      >View details
       </a>
     </section>
   </q-card>
@@ -94,6 +98,9 @@ $detail_text: darken($border_color, 25%);
 }
 .department-card__link {
   padding: 0.75rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
 
   a {
     text-decoration: none;

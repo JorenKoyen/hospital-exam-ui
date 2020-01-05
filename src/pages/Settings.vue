@@ -171,10 +171,4 @@ export default {
     padding-bottom: 0.75rem;
   }
 }
-.horizontal-center {
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-}
 </style>

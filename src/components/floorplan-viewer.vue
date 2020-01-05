@@ -23,6 +23,7 @@
         :facilities="r.facilities"
         compact
         :style="{top: r.y + 'px', left: r.x + 'px'}"
+        :class="{darkened: !r.visible}"
       />
     </div>
   </div>
@@ -30,29 +31,15 @@
 
 <script>
 import RoomCard from 'components/room-card.vue';
-import helper from '../api/helper';
 export default {
   name: 'floorplan-viewer',
   components: {
     RoomCard
   },
-  props: ['department'],
+  props: ['rooms'],
   data: function () {
     return {
-      rooms: []
     };
-  },
-  methods: {
-    async fetchRooms () {
-      const rooms = await helper({
-        resource: `departments/${this.department}/rooms`
-      });
-
-      this.rooms = rooms;
-    }
-  },
-  mounted () {
-    this.fetchRooms();
   }
 };
 </script>
@@ -67,5 +54,8 @@ export default {
 img.plan {
   width: 1500px;
   height: auto;
+}
+.darkened {
+  opacity: 15%;
 }
 </style>
